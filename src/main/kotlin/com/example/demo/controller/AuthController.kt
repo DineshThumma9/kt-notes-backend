@@ -1,0 +1,70 @@
+package com.example.demo.controller
+
+import com.example.demo.security.AuthService
+import com.example.demo.security.TokenPair
+import com.example.demo.repo.RefreshTokenRepository
+import jakarta.validation.constraints.Email
+import jakarta.validation.constraints.Pattern
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
+
+
+@RestController
+@RequestMapping("/auth")
+class AuthController(
+    private val authService: AuthService,
+    private val refreshTokenRepository: RefreshTokenRepository
+) {
+
+    data class AuthRequest(
+        @field:Email(message = "Invalid email format.")
+        val email: String,
+        @field:Pattern(
+            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{9,}\$",
+            message = "Password must be at least 9 characters long and contain at least one digit, uppercase and lowercase character."
+        )
+        val password: String
+    )
+
+
+    data class RefreshRequest(
+        val refreshToken:String
+    )
+
+    @PostMapping("/register")
+    fun register(
+        @RequestBody body: AuthRequest,
+
+    ) {
+
+        authService.register(body.email,body.password)
+
+    }
+
+
+
+
+    @PostMapping("/login")
+    fun login(
+        @RequestBody body: AuthRequest,
+
+        ) : TokenPair{
+
+       return authService.login(body.email,body.password)
+
+    }
+
+
+    @PostMapping("/refresh")
+    fun refresh(
+      @RequestBody body: RefreshRequest
+    ) : TokenPair{
+         return authService.refresh(body.refreshToken)
+    }
+
+
+
+
+}
